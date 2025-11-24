@@ -18,7 +18,7 @@ functions:
       - httpApi:
           path: /signup
           method: post
-    timeout: 30
+    timeout: 60
 
   login:
     handler: app/handler.Login

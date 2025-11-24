@@ -22,7 +22,7 @@ export const Login = middy((event: APIGatewayProxyEventV2) => {
   return userService.UserLogin(event);
 }).use(bodyParser());
 
-export const Verify = async (event: APIGatewayProxyEventV2) => {
+export const Verify = middy((event: APIGatewayProxyEventV2) => {
   const httpMethod = event.requestContext.http.method.toLowerCase();
   if (httpMethod == "post") {
     return userService.VerifyUser(event);
@@ -31,9 +31,9 @@ export const Verify = async (event: APIGatewayProxyEventV2) => {
   } else {
     return ErrorResponse(404, "Request method is not supported.");
   }
-};
+}).use(bodyParser());
 
-export const Profile = async (event: APIGatewayProxyEventV2) => {
+export const Profile = middy((event: APIGatewayProxyEventV2) => {
   const httpMethod = event.requestContext.http.method.toLowerCase();
   if (httpMethod == "post") {
     return userService.CreateProfile(event);
@@ -44,9 +44,9 @@ export const Profile = async (event: APIGatewayProxyEventV2) => {
   } else {
     return ErrorResponse(404, "Request method is not supported.");
   }
-};
+}).use(bodyParser());
 
-export const Cart = async (event: APIGatewayProxyEventV2) => {
+export const Cart = middy((event: APIGatewayProxyEventV2) => {
   const httpMethod = event.requestContext.http.method.toLowerCase();
   if (httpMethod == "post") {
     return userService.CreateCart(event);
@@ -57,9 +57,9 @@ export const Cart = async (event: APIGatewayProxyEventV2) => {
   } else {
     return ErrorResponse(404, "Request method is not supported.");
   }
-};
+}).use(bodyParser());
 
-export const Payment = async (event: APIGatewayProxyEventV2) => {
+export const Payment = middy((event: APIGatewayProxyEventV2) => {
   const httpMethod = event.requestContext.http.method.toLowerCase();
   if (httpMethod == "post") {
     return userService.CreatePaymetMethod(event);
@@ -70,4 +70,4 @@ export const Payment = async (event: APIGatewayProxyEventV2) => {
   } else {
     return ErrorResponse(404, "Request method is not supported.");
   }
-};
+}).use(bodyParser());

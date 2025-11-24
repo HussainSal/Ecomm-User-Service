@@ -1,6 +1,7 @@
 import { UserModel } from "app/models/UserModel";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { TokenFailure, TokenSuccess } from "./types";
 
 const APP_SECRET = "our_app_secret";
 
@@ -27,14 +28,17 @@ export const GetToken = ({ user_id, email, phone, userType }: UserModel) => {
   });
 };
 
-export const VerifyToken = async (token: string) => {
+export const VerifyToken = async (
+  token: string
+): Promise<TokenSuccess | TokenFailure> => {
   try {
-    if (token != "") {
-      const payload = jwt.verify(token.split(" ")[1], APP_SECRET);
-      return payload as UserModel;
+    if (!token) {
+      return { ok: false };
     }
-    return false;
+
+    const payload = jwt.verify(token.split(" ")[1], APP_SECRET);
+    return { ok: true, user: payload as UserModel };
   } catch (err) {
-    return err;
+    return { ok: false };
   }
 };

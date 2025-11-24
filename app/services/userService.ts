@@ -1,6 +1,8 @@
 import { LoginInput } from "app/models/dto/LoginInput";
 import { SignupInput } from "app/models/dto/SignupInput";
+import { VerificationInput } from "app/models/dto/UpdatedInput";
 import { UserRepository } from "app/repository/userRepository";
+import { timeDifference } from "app/utils/dateHelper";
 import { AppValidationError } from "app/utils/errors";
 import {
   GenerateAccessCode,
@@ -16,6 +18,7 @@ import {
 import { ErrorResponse, SuccessResponse } from "app/utils/response";
 import { APIGatewayProxyEventV2 } from "aws-lambda";
 import { plainToClass } from "class-transformer";
+import { log } from "console";
 import { autoInjectable, inject, injectable } from "tsyringe";
 
 @injectable()
@@ -79,11 +82,19 @@ export class UserService {
     const token = event.headers.authorization;
     const payload = await VerifyToken(token);
 
+    if (!payload.ok) return ErrorResponse(403, "Authorization failed.");
+
     if (payload) {
       const { code, expiry } = GenerateAccessCode();
 
-      // save in DB for confirmation
-      const response = await SendVerificationCode(code, payload.phone);
+      await this.repository.updateVerificationCode(
+        payload.user.user_id,
+        expiry,
+        code
+      );
+
+      console.log(code, expiry);
+      // const response = await SendVerificationCode(code, payload.phone);
 
       return SuccessResponse({
         message: "Verification code send successfully",
@@ -95,8 +106,39 @@ export class UserService {
 
   async VerifyUser(event: APIGatewayProxyEventV2) {
     console.log("Signup");
+    const token = event.headers.authorization;
+    const payload = await VerifyToken(token);
 
-    return SuccessResponse({ message: "response from verify user." });
+    const input = plainToClass(VerificationInput, event.body);
+    const errors = await AppValidationError(input);
+
+    if (errors) {
+      return ErrorResponse(404, errors);
+    }
+
+    if (payload.ok) {
+      const { verification_code, expiry } = await this.repository.FindAccount(
+        payload.user.email
+      );
+
+      if (verification_code === parseInt(input.code)) {
+        const currentTime = new Date();
+        const diff = timeDifference(expiry, currentTime.toISOString(), "m");
+
+        if (diff < 0) {
+          ErrorResponse(403, "Cdode expired");
+        } else {
+          this.repository.updateVerifyUser(payload.user.user_id);
+          console.log("Verified Successfully ");
+        }
+
+        console.log(diff, "LINE_127");
+      }
+
+      console.log(verification_code, "VALUES_HERE", expiry);
+
+      return SuccessResponse({ message: "response from verify user." });
+    }
   }
 
   // User profile

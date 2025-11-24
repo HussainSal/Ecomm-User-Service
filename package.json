@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "serverless offline start",
     "migrate-up": "db-migrate up",
-    "migrate-down": "db-migrate down"
+    "migrate-down": "db-migrate down",
+    "create-migration": "db-migrate create"
   },
   "keywords": [],
   "author": "",
@@ -30,6 +31,7 @@
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "dayjs": "^1.11.19",
     "db-migrate-pg": "^1.5.2",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.0",
